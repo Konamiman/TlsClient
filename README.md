@@ -1,13 +1,13 @@
 # TLS 1.3 client
 
-This is a [RFC8446](https://datatracker.ietf.org/doc/html/rfc8446) compliant TLS 1.3 client implementation written in C# and targetting .NET8. As simple as that.
+This is a [RFC8446](https://datatracker.ietf.org/doc/html/rfc8446) compliant TLS 1.3 client implementation written in C# and targetting [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0). As simple as that.
 
 
 ## Why?
 
 Just for fun/educational purposes. I wanted to make sure that I understood the TLS specification to the point of being able to write a full implementation "from scratch"<sup>1</sup>, so I just did it.
 
-This implementation works but it hasn't been extensively tested, and there's probably plenty of room for improvement in the performance side (e.g. I use LINQ extensively because it makes the code for handling collections of bytes really easy to write and read, but that's probably not the wiser choice from a performance perspective). Therefore I **don't** recommend using it in production scenarios, at least not before you thoroughly test it to make sure that it's appropriate given your performance, stability and security requirements (also doesn't .NET implement TLS natively anyway?)
+This implementation works but it hasn't been extensively tested, and there's probably plenty of room for improvement in the performance side (e.g. I use [LINQ](https://learn.microsoft.com/en-us/dotnet/csharp/linq/) extensively because it makes the code for handling collections of bytes really easy to write and read, but that's probably not the wiser choice from a performance perspective). Therefore I **don't** recommend using it in production scenarios, at least not before you thoroughly test it to make sure that it's appropriate given your performance, stability and security requirements (also doesn't .NET implement TLS natively anyway?)
 
 <sup>1</sup>I'm actually using the .NET built-in functionality for the purely cryptographic parts (HMAC, SHA256/384, AES, certificate verification).
 
