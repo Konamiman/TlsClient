@@ -23,7 +23,7 @@ This implementation works but it hasn't been extensively tested, and there's pro
 
 There are other public properties that can be useful for debugging purposes (e.g. `Certificates`, `AlertSent`, `AlertReceived`) and a collection of events for significant occurrences (e.g. `StateChanged`), see [the source of `TlsClientConnection`](https://github.com/Konamiman/TlsClient/blob/master/TlsClient/TlsClientConnection.cs) for the details.
 
-See [the `TlsConsole` project](https://github.com/Konamiman/TlsClient/blob/master/TlsConsole/Program.cs) for a very simple yet functional example. It's a minimal Telnet-like application that once the connection is established will simply send whatever you type and print out whatever is received. A typical minimal test you can perform using it is connecting to a web server and sending `GET / HTTP/1.1` followed by `Host: hostname.com` and an empty line.
+See [the `TlsConsole` project](https://github.com/Konamiman/TlsClient/blob/master/TlsConsole/Program.cs) for a very simple yet functional example. It's a minimal Telnet-like application that once the connection is established will simply send whatever you type and print out whatever is received. A typical minimal test you can perform using it is connecting to a web server and sending `GET / HTTP/1.1` followed by `Host: <hostname>` and an empty line.
 
 
 ## The state machine
