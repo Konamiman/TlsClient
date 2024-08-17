@@ -40,11 +40,25 @@ internal class RecordEncryption
             size = content.Length;
         }
 
+        /*
+          struct {
+            opaque content[TLSPlaintext.length];
+            ContentType type;
+            uint8 zeros[length_of_padding];
+          } TLSInnerPlaintext;
+        */
+
         var contentToEncrypt = content
             .Skip(index).Take(size)
             .Concat([(byte)contentType])
             .Concat(Enumerable.Repeat<byte>(0, paddingLength))
             .ToArray();
+
+        /*
+         additional_data = TLSCiphertext.opaque_type ||
+           TLSCiphertext.legacy_record_version ||
+           TLSCiphertext.length
+         */
 
         var encryptedLength = contentToEncrypt.Length + tagSize;
         byte[] additionalData = [
@@ -69,11 +83,19 @@ internal class RecordEncryption
     public (RecordContentType, int) Decrypt(byte[] encryptedContent, byte[] destination, int? encryptedLength = null)
     {
         encryptedLength ??= encryptedContent.Length;
+
+        /*
+         additional_data = TLSCiphertext.opaque_type ||
+           TLSCiphertext.legacy_record_version ||
+           TLSCiphertext.length
+         */
+
         byte[] additionalData = [
             (byte)RecordContentType.ApplicationData,
             3,3,
             ..encryptedLength.Value.ToBigEndianUint16Bytes()
         ];
+
         var innerDataLength = encryptedLength.Value - tagSize;
         var tag = encryptedContent.Skip(innerDataLength).Take(tagSize).ToArray();
         var cipherText = encryptedContent.Take(innerDataLength).ToArray();
@@ -85,6 +107,14 @@ internal class RecordEncryption
         catch(Exception ex) {
             throw new ProtocolError(AlertCode.badRecordMac, $"Error when decrypting data: ({ex.GetType().Name}) {ex.Message}");
         }
+
+        /*
+         struct {
+           opaque content[TLSPlaintext.length];
+           ContentType type;
+           uint8 zeros[length_of_padding];
+         } TLSInnerPlaintext;
+         */
 
         decryptedContent = decryptedContent.Reverse().SkipWhile(c => c == 0).Reverse().ToArray();
         if(decryptedContent.Length == 0) {

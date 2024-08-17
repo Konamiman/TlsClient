@@ -64,7 +64,7 @@ namespace Konamiman.TlsClient.DataStructures
             VerifyDataLength(remainingLength, legacySessionIdLength);
             index += legacySessionIdLength; //Now index points past legacy_session_id_echo
             remainingLength -= legacySessionIdLength;
-            //TODO: Check if legacySessionId matches the value that was sent in CloientHello.
+            //TODO: Check if legacySessionId matches the value that was sent in ClientHello.
 
             CipherSuite = (CipherSuite)data.ExtractBigEndianUint16(index);
             index += 2; //Now index points to legacy_compression_method

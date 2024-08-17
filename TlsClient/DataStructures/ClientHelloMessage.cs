@@ -29,7 +29,7 @@ namespace Konamiman.TlsClient.DataStructures
 
         /// <summary>
         /// Serializes the message as a TLS record, not including
-        /// the 5 byte record headernor the 4 byte handshake header.
+        /// the 5 byte record header nor the 4 byte handshake header.
         /// </summary>
         /// <returns></returns>
         public byte[] ToByteArray()
@@ -54,8 +54,7 @@ namespace Konamiman.TlsClient.DataStructures
                 32,
                 ..RandomNumberGenerator.GetBytes(32),
                 ..(CipherSuites.Length * 2).ToBigEndianUint16Bytes(),
-                ..CipherSuites.Cast<ushort>()
-                .ToBigEndianUint16BytesArray(),
+                ..CipherSuites.Cast<ushort>().ToBigEndianUint16BytesArray(),
                 1, 0, //legacy_compression_methods
                 ..extensions.Length.ToBigEndianUint16Bytes(),
                 ..extensions
