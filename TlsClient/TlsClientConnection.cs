@@ -229,7 +229,8 @@ public class TlsClientConnection
     int receivedRecordReceivedLength = 0;
     int receivedRecordLength = 0;
     string hostName;
-    byte[] privateKey;
+    byte[] localX25519privateKey;
+    ECDiffieHellman localP256Key;
     byte[] sharedSecret;
     HashAlgorithm hashAlgorithm;
     HMAC hmacAlgorithm;
@@ -547,16 +548,24 @@ public class TlsClientConnection
         if(state is ConnectionState.Initial) {
             State = ConnectionState.Handshake;
 
-            var publicKey = new byte[32];
-            if(privateKey is null) {
-                privateKey = new byte[32];
-                RandomNumberGenerator.Create().GetBytes(privateKey);
+            if(localX25519privateKey is null) {
+                localX25519privateKey = new byte[32];
+                RandomNumberGenerator.Create().GetBytes(localX25519privateKey);
             }
-            Curve25519.KeyGenInline(publicKey, null, privateKey);
+            if(localP256Key is null) {
+                localP256Key = ECDiffieHellman.Create(new ECParameters {
+                    Curve = ECCurve.NamedCurves.nistP256,
+                    D = localX25519privateKey
+                });
+            }
+
+            var x25519publicKey = new byte[32];
+            Curve25519.KeyGenInline(x25519publicKey, null, localX25519privateKey);
 
             var clientHello = new ClientHelloMessage() {
                 CipherSuites = [CipherSuite.TLS_AES_128_GCM_SHA256, CipherSuite.TLS_AES_256_GCM_SHA384],
-                PublicKey = publicKey,
+                P256PublicKey = localP256Key.ExportSubjectPublicKeyInfo().Skip(27).ToArray(),
+                X25519PublicKey = x25519publicKey,
                 ServerName = hostName
             };
             var clientHelloBytes = clientHello.ToByteArray();
@@ -611,7 +620,22 @@ public class TlsClientConnection
                 hashAlgorithm,
                 keyLength: serverHello.CipherSuite is CipherSuite.TLS_AES_128_GCM_SHA256 ? 16 : 32,
                 ivLength: 12);
-            var sharedSecret = Curve25519.GetSharedSecret(privateKey, serverHello.PublicKey);
+
+            byte[] sharedSecret;
+            if(serverHello.PublicKey.Length == 32) { //P256 key is 64 bytes, X25519 key is 32 bytes
+                sharedSecret = Curve25519.GetSharedSecret(localX25519privateKey, serverHello.PublicKey);
+            }
+            else {
+                var remoteEcdhKey = ECDiffieHellman.Create(new ECParameters {
+                    Curve = ECCurve.NamedCurves.nistP256,
+                    Q = new ECPoint {
+                        X = serverHello.PublicKey.Skip(1).Take(32).ToArray(),
+                        Y = serverHello.PublicKey.Skip(33).ToArray(),
+                    }
+                });
+                sharedSecret = localP256Key.DeriveRawSecretAgreement(remoteEcdhKey.PublicKey);
+            }
+
             keys.ComputeHandshakeKeys(sharedSecret, hashAlgorithm.ComputeHash(transmittedHandshakeBytes.ToArray()));
             encryption = new RecordEncryption(keys, tagSize: 16);
             dataReceiver.Encryption = encryption;
