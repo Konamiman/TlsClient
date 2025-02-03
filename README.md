@@ -35,7 +35,7 @@ This state machine runs whenever the `State`, `CanSend` or `CanReceive` properti
 
 ## What's implemented
 - TLS 1.3 client protocol as per [RFC8446](https://datatracker.ietf.org/doc/html/rfc8446) (obviously).
-- X25519 for key exchange (code "acquired" from [a gist by Hans Wolff](https://gist.github.com/hanswolff/7625227)).
+- NIST P256 and X25519 for key exchange (code for X25519 "acquired" from [a gist by Hans Wolff](https://gist.github.com/hanswolff/7625227)).
 - The `TLS_AES_128_GCM_SHA256` and `TLS_AES_256_GCM_SHA384` cipher suites.
 - The `ecdsa_secp256r1_sha256`, `rsa_pss_rsae_sha256` and `rsa_pkcs1_sha256` algorithgms, together with their SHA384 versions, for signature verification.
 - The [Server Name Indication extension](https://datatracker.ietf.org/doc/html/rfc6066#section-3).

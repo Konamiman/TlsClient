@@ -23,7 +23,9 @@ namespace Konamiman.TlsClient.DataStructures
 
         public CipherSuite[] CipherSuites { get; set; } = null;
 
-        public byte[] PublicKey { get; set; } = null;
+        public byte[] P256PublicKey { get; set; } = null;
+
+        public byte[] X25519PublicKey { get; set; } = null;
 
         public string ServerName { get; set; } = null;
 
@@ -42,8 +44,12 @@ namespace Konamiman.TlsClient.DataStructures
                 throw new InvalidOperationException($"{CipherSuites} can't be null");
             }
 
-            if(PublicKey is null) {
-                throw new InvalidOperationException($"{PublicKey} can't be null");
+            if(P256PublicKey is null) {
+                throw new InvalidOperationException($"{P256PublicKey} can't be null");
+            }
+
+            if(X25519PublicKey is null) {
+                throw new InvalidOperationException($"{X25519PublicKey} can't be null");
             }
 
             var extensions = GetExtensions();
@@ -83,18 +89,23 @@ namespace Konamiman.TlsClient.DataStructures
                 //supported_groups
 
                 ..((ushort)HandshakeExtensionType.SupportedGroups).ToBigEndianUint16Bytes(),
-                0, 4, // Extension size
-                0, 2, // Data size
+                0, 6, // Extension size
+                0, 4, // Data size
+                ..((ushort)SupportedGroup.SECP_256_R1).ToBigEndianUint16Bytes(),
                 ..((ushort)SupportedGroup.X25519).ToBigEndianUint16Bytes(),
 
                 //key_share
 
                 ..((ushort)HandshakeExtensionType.KeyShare).ToBigEndianUint16Bytes(),
-                0, 38, // Extension size
-                0, 36, // Data size
+                0, 107, // Extension size
+                0, 105, // Data size
+                ..((ushort)SupportedGroup.SECP_256_R1).ToBigEndianUint16Bytes(),
+                0, 65, // Key size
+                4, //Legacy form
+                ..P256PublicKey,
                 ..((ushort)SupportedGroup.X25519).ToBigEndianUint16Bytes(),
                 0, 32, // Key size
-                ..PublicKey,
+                ..X25519PublicKey,
 
                 //signature_algorithms
 
